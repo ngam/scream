@@ -642,11 +642,11 @@ contains
       call addfld("pseudo_density_inRAD",   (/ 'lev' /),         'I', 'Pa',       "pseudo density")
       call addfld("qc_inRAD",               (/ 'lev' /),         'I', 'kg/kg',    "qc, cld water MMR")
       call addfld("qi_inRAD",               (/ 'lev' /),         'I', 'kg/kg',    "qi, ice water MMR")
-      call addfld('surf_alb_diffuse_inRAD', (/'swband'/),        'I', '1',        "Shortwave direct-beam albedo", &
-                  sampling_seq='rad_lwsw', flag_xyfill=.true.)
-      call addfld('surf_alb_direct_inRAD', (/'swband'/),         'I', '1',        "Shortwave diffuse-beam albedo", &
-                  sampling_seq='rad_lwsw', flag_xyfill=.true.)
       call addfld("t_int_inRAD",            (/ 'ilev' /),        'I', 'K',        "Interface Temperature")
+      call addfld("sfc_alb_dir_vis_inRAD",  horiz_only,          'I', '1',        "Direct shortwave surface albedo")
+      call addfld("sfc_alb_dif_vis_inRAD",  horiz_only,          'I', '1',        "Diffuse shortwave surface albedo")
+      call addfld("sfc_alb_dir_nir_inRAD",  horiz_only,          'I', '1',        "Direct longwave surface albedo")
+      call addfld("sfc_alb_dif_nir_inRAD",  horiz_only,          'I', '1',        "Diffuse longwave surface albedo")
 
       ! Shortwave radiation
       call addfld('TOT_CLD_VISTAU', (/ 'lev' /), 'A',   '1', &
@@ -1390,8 +1390,10 @@ contains
          ! Send albedos to history buffer (useful for debugging)
          call outfld('SW_ALBEDO_DIR', transpose(albedo_dir(1:nswbands,1:ncol)), ncol, state%lchnk)
          call outfld('SW_ALBEDO_DIF', transpose(albedo_dif(1:nswbands,1:ncol)), ncol, state%lchnk)
-         call outfld('surf_alb_direct_inRAD', transpose(albedo_dir(1:nswbands,1:ncol)), ncol, state%lchnk)
-         call outfld('surf_alb_diffuse_inRAD', transpose(albedo_dif(1:nswbands,1:ncol)), ncol, state%lchnk)
+         call outfld("sfc_alb_dir_vis_inRAD",  cam_in%asdir , ncol, state%lchnk)
+         call outfld("sfc_alb_dif_vis_inRAD",  cam_in%asdif , ncol, state%lchnk)
+         call outfld("sfc_alb_dir_nir_inRAD",  cam_in%aldir , ncol, state%lchnk)
+         call outfld("sfc_alb_dif_nir_inRAD",  cam_in%aldif , ncol, state%lchnk)
 
          ! Get cosine solar zenith angle for current time step.
          call set_cosine_solar_zenith_angle(state, dt_avg, coszrs(1:ncol))
