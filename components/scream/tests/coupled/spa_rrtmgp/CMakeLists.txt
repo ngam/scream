@@ -3,9 +3,8 @@ INCLUDE (ScreamUtils)
 find_library(NETCDF_C netcdf HINTS ${NetCDF_C_PATHS}/lib)
 SET (NEED_LIBS spa scream_rrtmgp rrtmgp scream_control physics_share scream_share ${NETCDF_C} yakl)
 
-SET (SRC spa_rrtmgp.cpp ${SCREAM_BASE_DIR}/src/physics/rrtmgp/tests/rrtmgp_test_utils.cpp)
 # Test atmosphere processes
-CreateUnitTest(spa_rrtmgp "${SRC}" "${NEED_LIBS}" LABELS "spa;rrtmgp;physics")
+CreateUnitTest(spa_rrtmgp "spa_rrtmgp.cpp" "${NEED_LIBS}" LABELS "spa;rrtmgp;physics")
 
 # Copy yaml input file to run directory
 CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/input.yaml

@@ -7,6 +7,7 @@
 #include "physics/share/physics_only_grids_manager.hpp"
 #include "physics/spa/atmosphere_prescribed_aerosol.hpp"
 #include "physics/rrtmgp/atmosphere_radiation.hpp"
+#include "YAKL.h"
 // EKAT headers
 #include "ekat/ekat_pack.hpp"
 #include "ekat/ekat_parse_yaml_file.hpp"
@@ -16,9 +17,6 @@ namespace scream {
 TEST_CASE("spa-rrtmgp", "") {
   using namespace scream;
   using namespace scream::control;
-
-  constexpr int num_iters = 4;
-  constexpr Real dt = 864000;
 
   // Load ad parameter list
   std::string fname = "input.yaml";
@@ -31,6 +29,9 @@ TEST_CASE("spa-rrtmgp", "") {
   // Initialize yakl
   if(!yakl::isInitialized()) { yakl::init(); }
 
+  // Simulation control parameters
+  const auto& num_iters = ad_params.get<int>("Number of Iterations");
+  const auto& dt        = ad_params.get<Real>("dt");
 
   // Need to register products in the factory *before* we create any atm process or grids manager.
   auto& proc_factory = AtmosphereProcessFactory::instance();
