@@ -282,4 +282,56 @@ contains
 
   end subroutine grid_read_data_array_c2f_real
 !=====================================================================!
+  subroutine grid_read_data_array_c2f_int(filename_in,varname_in,var_size,var_data_ptr) bind(c)
+    use scream_scorpio_interface, only: grid_read_data_array
+
+    type(c_ptr), intent(in)                               :: filename_in
+    type(c_ptr), intent(in)                               :: varname_in
+    integer(kind=c_int), value, intent(in)                :: var_size
+    integer(kind=c_int), dimension(var_size), intent(out) :: var_data_ptr
+
+    character(len=256) :: filename
+    character(len=256) :: varname
+
+    call convert_c_string(filename_in,filename)
+    call convert_c_string(varname_in,varname)
+    call grid_read_data_array(filename,varname,var_size,var_data_ptr)
+
+  end subroutine grid_read_data_array_c2f_int
+!=====================================================================!
+  subroutine grid_read_data_array_wtime_c2f_real(filename_in,varname_in,var_data_ptr,time_level) bind(c)
+    use scream_scorpio_interface, only: grid_read_data_array
+
+    type(c_ptr), intent(in)  :: filename_in
+    type(c_ptr), intent(in)  :: varname_in
+    type(c_ptr), intent(out) :: var_data_ptr
+    integer(kind=c_int), value, intent(in) :: time_level
+
+    character(len=256) :: filename
+    character(len=256) :: varname
+
+    call convert_c_string(filename_in,filename)
+    call convert_c_string(varname_in,varname)
+    call grid_read_data_array(filename,varname,var_data_ptr,time_level)
+
+  end subroutine grid_read_data_array_wtime_c2f_real
+!=====================================================================!
+  subroutine grid_read_data_array_wtime_c2f_int(filename_in,varname_in,var_size,var_data_ptr,time_level) bind(c)
+    use scream_scorpio_interface, only: grid_read_data_array
+
+    type(c_ptr), intent(in)                               :: filename_in
+    type(c_ptr), intent(in)                               :: varname_in
+    integer(kind=c_int), value, intent(in)                :: var_size
+    integer(kind=c_int), dimension(var_size), intent(out) :: var_data_ptr
+    integer(kind=c_int), value, intent(in) :: time_level
+
+    character(len=256) :: filename
+    character(len=256) :: varname
+
+    call convert_c_string(filename_in,filename)
+    call convert_c_string(varname_in,varname)
+    call grid_read_data_array(filename,varname,var_size,var_data_ptr,time_level)
+
+  end subroutine grid_read_data_array_wtime_c2f_int
+!=====================================================================!
 end module scream_scorpio_interface_iso_c2f
