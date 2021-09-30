@@ -149,11 +149,11 @@ void grid_read_data_array(const std::string &filename, const std::string &varnam
 };
 /* ----------------------------------------------------------------- */
 void grid_read_data_array(const std::string &filename, const std::string &varname, const Int time_level, Real *hbuf) {
-  grid_read_data_array_c2f_real(filename.c_str(),varname.c_str(),hbuf,time_level);
+  grid_read_data_array_wtime_c2f_real(filename.c_str(),varname.c_str(),hbuf,time_level);
 };
 /* ----------------------------------------------------------------- */
 void grid_read_data_array(const std::string &filename, const std::string &varname, const Int time_level, Int hbuf_size, Int *hbuf) {
-  grid_read_data_array_c2f_int(filename.c_str(),varname.c_str(),hbuf_size,hbuf,time_level);
+  grid_read_data_array_wtime_c2f_int(filename.c_str(),varname.c_str(),hbuf_size,hbuf,time_level);
 };
 /* ----------------------------------------------------------------- */
 void grid_write_data_array(const std::string &filename, const std::string &varname, const Real* hbuf) {

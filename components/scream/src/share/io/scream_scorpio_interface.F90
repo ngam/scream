@@ -1271,9 +1271,9 @@ contains
     if (present(time_level)) then
       tlevel = time_level
     else
-      tlevel = int(max(1,pio_atm_file%numRecs)
+      tlevel = int(max(1,pio_atm_file%numRecs))
     end if
-    call PIO_setframe(pio_atm_file%pioFileDesc,var%piovar,tlevel,kind=pio_offset_kind))
+    call PIO_setframe(pio_atm_file%pioFileDesc,var%piovar,int(tlevel,kind=pio_offset_kind))
 
     ! Now read the data using PIO and check that no errors occurred.
     call pio_read_darray(pio_atm_file%pioFileDesc, var%piovar, var%iodesc, var_data, ierr)
@@ -1281,39 +1281,32 @@ contains
 
   end subroutine grid_read_darray_1d_real
   !---------------------------------------------------------------------------
-  subroutine grid_read_darray_1d_int(filename, varname, var_size, var_data_ptr, time_level)
+  subroutine grid_read_darray_1d_int(filename, varname, var_size, var_data, time_level)
 
     ! Dummy arguments
-    character(len=*),  intent(in)            :: filename       ! PIO filename
-    character(len=*),  intent(in)            :: varname
-    integer, intent(in)                      :: var_size
-    integer, intent(in), dimension(var_size) :: var_data_ptr
-    integer, optional, intent(in)            :: time_level
+    character(len=*),  intent(in)             :: filename       ! PIO filename
+    character(len=*),  intent(in)             :: varname
+    integer, intent(in)                       :: var_size
+    integer, intent(out), dimension(var_size) :: var_data
+    integer, optional, intent(in)             :: time_level
 
     ! Local variables
     type(pio_atm_file_t),pointer       :: pio_atm_file
     type(hist_var_t), pointer          :: var
-    integer                            :: ierr, var_size, ndims, i, tlevel
+    integer                            :: ierr, ndims, i, tlevel
     logical                            :: found
-    real(rtype), dimension(:), pointer :: var_data
 
     call lookup_pio_atm_file(trim(filename),pio_atm_file,found)
     call get_var(pio_atm_file,varname,var)
     
-    ! We don't want the extent along the 'time' dimension
-    var_size = SIZE(var%compdof)
-
-    ! Now we know the exact size of the array, and can shape the f90 pointer
-    call c_f_pointer (var_data_ptr, var_data, [var_size])
-
     ! If the time_level argument is present, use this as the time slice to set
     ! the frame.  Otherwise, take the highest possible frame value.
     if (present(time_level)) then
       tlevel = time_level
     else
-      tlevel = int(max(1,pio_atm_file%numRecs)
+      tlevel = int(max(1,pio_atm_file%numRecs))
     end if
-    call PIO_setframe(pio_atm_file%pioFileDesc,var%piovar,tlevel,kind=pio_offset_kind))
+    call PIO_setframe(pio_atm_file%pioFileDesc,var%piovar,int(tlevel,kind=pio_offset_kind))
 
     ! Now read the data using PIO and check that no errors occurred.
     call pio_read_darray(pio_atm_file%pioFileDesc, var%piovar, var%iodesc, var_data, ierr)

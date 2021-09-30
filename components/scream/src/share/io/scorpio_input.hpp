@@ -132,6 +132,7 @@ public:
 
   // Read fields that were required via parameter list.
   void read_variables ();
+  void read_variables (const int tlevel);
   int read_int_scalar (const std::string& name);
   void finalize();
 
