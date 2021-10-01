@@ -42,4 +42,9 @@ Initial Conditions:
 SCORPIO:
   Output YAML Files:
     Point Grid: ["shoc_cld_p3_rrtmgp_standalone_output_np${MPI_RANKS}.yaml"]
+  Model Restart:
+    Casename: shoc_cld_p3_rrtmgp
+    Output:
+      Frequency: 20
+      Frequency Units: Steps
 ...

@@ -37,15 +37,19 @@ setup (const ekat::Comm& io_comm, const ekat::ParameterList& params,
   // The output history should have the same restart frequency as the model restart output.
   int checkpoint_freq = 0;
   std::string checkpoint_freq_units = "None";
+  // TODO: All this is a bit confusing and should be re-done.  Currently it seems like you have to have
+  // both an output yaml file listed in the Output section of the input.yaml file.  In that file you need
+  // to list the restart and checkpoint frequency, which needs to match.  You also need to list the same
+  // info in the input.yaml file directly so that you can get past the following checks.
   if (m_params.isSublist("Model Restart")) {
     // Get restart parameters, and create a param list for the model restart output
     auto& out_params = m_params.sublist("Model Restart");
     make_restart_param_list(out_params);
     add_output_stream(out_params,true);
 
-    // Gather restart frequency info, since the checkpointing info must match them
-    checkpoint_freq       = out_params.sublist("Output").get<Int>("Frequency");
-    checkpoint_freq_units = out_params.sublist("Output").get<std::string>("Frequency Units");
+//ASD    // Gather restart frequency info, since the checkpointing info must match them
+//ASD    checkpoint_freq       = out_params.sublist("Output").get<Int>("Frequency");
+//ASD    checkpoint_freq_units = out_params.sublist("Output").get<std::string>("Frequency Units");
   }
 
   // Construct and store an output stream instance for each output request.
@@ -60,13 +64,16 @@ setup (const ekat::Comm& io_comm, const ekat::ParameterList& params,
   for (auto& it : list_of_files) {
     ekat::ParameterList out_params(it);
     parse_yaml_file(it,out_params);
-    auto& checkpointing_params = out_params.sublist("Checkpointing");
-    EKAT_REQUIRE_MSG (checkpointing_params.get("Frequency",checkpoint_freq)==checkpoint_freq,
-        "Error! Output checkpointing frequency is different from the model restart output one.\n"
-        "       In case model restart output is generated, checkpointing must have the same frequency.\n");
-    EKAT_REQUIRE_MSG (checkpointing_params.get("Frequency Units",checkpoint_freq_units)==checkpoint_freq_units,
-        "Error! Output checkpointing frequency units are different from the model restart output one.\n"
-        "       In case model restart output is generated, checkpointing must have the same units.\n");
+//ASD    if (out_params.isSublist("Checkpointing")) {
+//ASD      auto& checkpointing_params = out_params.sublist("Checkpointing");
+//ASD      printf("ASD - %d vs %d\n",checkpointing_params.get<Int>("Frequency"),checkpoint_freq);
+//ASD      EKAT_REQUIRE_MSG (checkpointing_params.get<Int>("Frequency")==checkpoint_freq,
+//ASD          "Error! Output checkpointing frequency is different from the model restart output one.\n"
+//ASD          "       In case model restart output is generated, checkpointing must have the same frequency.\n");
+//ASD      EKAT_REQUIRE_MSG (checkpointing_params.get<std::string>("Frequency Units")==checkpoint_freq_units,
+//ASD          "Error! Output checkpointing frequency units are different from the model restart output one.\n"
+//ASD          "       In case model restart output is generated, checkpointing must have the same units.\n");
+//ASD    }
     add_output_stream(out_params,false);
   }
 }
@@ -104,7 +111,12 @@ void OutputManager::make_restart_param_list(ekat::ParameterList& params)
   // Given the unique nature of restart files, this routine sets up the specific requirements.
 
   //TODO change this to some sort of case_name, TODO: control so suffix is .r.nc
-  params.set<std::string>("Casename", "scorpio_restart_test");
+  //     TODO: ASD we could easily check if the params already has one of these fields and then only
+  //           change if it's missing.
+
+  auto casename=params.get<std::string>("Casename", "scorpio_restart_test");
+  params.set<std::string>("Casename", casename);
+
 
   // Parse the parameters that controls this output instance.
   // Model restart themselves are instant snapshots (no averaging of any kind).

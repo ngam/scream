@@ -58,6 +58,12 @@ Fields:
   - t_int
  
 Output:
-  Frequency: 5
+  Frequency: 50
+  Frequency Units: Steps
+Restart:
+  Frequency: 10
+  Frequency Units: Steps
+Checkpointing:
+  Frequency: 10
   Frequency Units: Steps
 ...
