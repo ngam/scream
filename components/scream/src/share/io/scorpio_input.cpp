@@ -93,11 +93,18 @@ void AtmosphereInput::read_variables (const int tlevel)
   for (auto const& name : m_fields_names) {
 
     // Read the data
+    printf("ASD - %s size = %d\n",name.c_str(),m_layouts.at(name).size());
+    auto tmp_view = m_host_views_1d.at(name);
+    const auto& tmp_ptr = m_host_views_1d.at(name).data();
     if (tlevel < 0) // Then use default timelevel,
     {
-      scorpio::grid_read_data_array(m_filename,name,m_host_views_1d.at(name).data());
+      //scorpio::grid_read_data_array(m_filename,name,m_layouts.at(name).size(),m_host_views_1d.at(name).data());
+      scorpio::grid_read_data_array(m_filename,name,m_layouts.at(name).size(),tmp_ptr);
     } else { // Otherwise use the timesnap provided.
-      scorpio::grid_read_data_array(m_filename,name,tlevel,m_host_views_1d.at(name).data());
+      scorpio::grid_read_data_array(m_filename,name,m_layouts.at(name).size(),tlevel,m_host_views_1d.at(name).data());
+    }
+    for (int i=0;i<m_layouts.at(name).size();i++) {
+      printf("  cpp - %s, %f\n",name.c_str(),tmp_view(i));
     }
 
     // If we have a field manager, make sure the data is correctly
