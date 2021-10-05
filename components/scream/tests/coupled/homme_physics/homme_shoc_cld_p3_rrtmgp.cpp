@@ -92,6 +92,11 @@ TEST_CASE("scream_homme_physics", "scream_homme_physics") {
 
   EKAT_ASSERT_MSG (dt>0, "Error! Time step must be positive.\n");
 
+  const auto& grid = ad.get_grids_manager()->get_grid("Physics GLL");
+  const auto& field_mgr = *ad.get_field_mgr(grid->name());
+  auto d_mom_flux = field_mgr.get_field("surf_mom_flux").get_view<Real**>();
+  Kokkos::deep_copy(d_mom_flux,0.0);
+  
   for (int i=0; i<num_dyn_iters; ++i) {
     ad.run(dt);
   }
