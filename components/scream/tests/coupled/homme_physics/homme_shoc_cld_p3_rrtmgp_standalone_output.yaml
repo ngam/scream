@@ -60,7 +60,6 @@ Fields:
   - sfc_alb_dir_vis
   - sfc_alb_dif_nir
   - sfc_alb_dif_vis
-  - t_int
  
 Output:
   Frequency: 5
