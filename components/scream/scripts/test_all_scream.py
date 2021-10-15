@@ -54,7 +54,7 @@ class TestAllScream(object):
         self._preserve_env            = preserve_env
         self._tests                   = tests
         self._root_dir                = root_dir
-        self._work_dir                = work_dir
+        self._work_dir                = None if work_dir is None else Path(work_dir)
         self._integration_test        = integration_test
         self._quick_rerun             = quick_rerun
         self._quick_rerun_failed      = quick_rerun_failed
@@ -180,7 +180,7 @@ class TestAllScream(object):
             self._update_expired_baselines = True
 
         # By now, we should have at least one between baseline_dir and baseline_ref set (possibly both)
-        default_baselines_root_dir = self._work_dir + "/baselines"
+        default_baselines_root_dir = self._work_dir / "baselines"
         if self._baseline_dir is None:
             # Use default baseline dir, and create it if necessary
             self._baseline_dir = Path(default_baselines_root_dir).absolute()
