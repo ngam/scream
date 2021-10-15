@@ -574,7 +574,7 @@ remove existing baselines first. Otherwise, please run 'git fetch $remote'.
             # not get a dashboard report if we did that. Instead, just ensure there is
             # no baseline file to compare against if there's a problem.
             stat, _, err = run_cmd("{} {}".format(cmake_config, self._root_dir),
-                                   arg_stdout=None, from_dir=test_dir, verbose=True, dry_run=self._dry_run)
+                                   combine_output=True, arg_stdout=None, from_dir=test_dir, verbose=True, dry_run=self._dry_run)
             if stat != 0:
                 print ("WARNING: Failed to configure baselines:\n{}".format(err))
                 success = False
@@ -585,7 +585,7 @@ remove existing baselines first. Otherwise, please run 'git fetch $remote'.
                     start, end = self.get_taskset_id(test)
                     cmd = "taskset -c {}-{} sh -c '{}'".format(start,end,cmd)
 
-                stat, _, err = run_cmd(cmd, arg_stdout=None, from_dir=test_dir, verbose=True, dry_run=self._dry_run)
+                stat, _, err = run_cmd(cmd, combine_output=True, arg_stdout=None, from_dir=test_dir, verbose=True, dry_run=self._dry_run)
 
                 if stat != 0:
                     print("WARNING: Failed to create baselines:\n{}".format(err))
