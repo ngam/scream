@@ -180,7 +180,7 @@ class TestAllScream(object):
             self._update_expired_baselines = True
 
         # By now, we should have at least one between baseline_dir and baseline_ref set (possibly both)
-        default_baselines_root_dir = self._work_dir/"baselines"
+        default_baselines_root_dir = self._work_dir + "/baselines"
         if self._baseline_dir is None:
             # Use default baseline dir, and create it if necessary
             self._baseline_dir = Path(default_baselines_root_dir).absolute()
@@ -574,7 +574,7 @@ remove existing baselines first. Otherwise, please run 'git fetch $remote'.
             # not get a dashboard report if we did that. Instead, just ensure there is
             # no baseline file to compare against if there's a problem.
             stat, _, err = run_cmd("{} {}".format(cmake_config, self._root_dir),
-                                   from_dir=test_dir, verbose=True, dry_run=self._dry_run)
+                                   arg_stdout=None, from_dir=test_dir, verbose=True, dry_run=self._dry_run)
             if stat != 0:
                 print ("WARNING: Failed to configure baselines:\n{}".format(err))
                 success = False
@@ -585,17 +585,18 @@ remove existing baselines first. Otherwise, please run 'git fetch $remote'.
                     start, end = self.get_taskset_id(test)
                     cmd = "taskset -c {}-{} sh -c '{}'".format(start,end,cmd)
 
-                stat, _, err = run_cmd(cmd, from_dir=test_dir, verbose=True, dry_run=self._dry_run)
+                stat, _, err = run_cmd(cmd, arg_stdout=None, from_dir=test_dir, verbose=True, dry_run=self._dry_run)
 
                 if stat != 0:
                     print("WARNING: Failed to create baselines:\n{}".format(err))
                     success = False
 
         finally:
+            print ("done")
             # Clean up the directory, by removing everything but the 'data' subfolder. This must
             # happen unconditionally or else subsequent runs could be corrupted
-            run_cmd_no_fail(r"find -maxdepth 1 -not -name data ! -path . -exec rm -rf {} \;",
-                            from_dir=test_dir, verbose=True, dry_run=self._dry_run)
+            # run_cmd_no_fail(r"find -maxdepth 1 -not -name data ! -path . -exec rm -rf {} \;",
+            #                 from_dir=test_dir, verbose=True, dry_run=self._dry_run)
 
         if success:
             # Store the sha used for baselines generation
