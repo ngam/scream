@@ -6,7 +6,7 @@ find_library(NETCDF_C netcdf HINTS ${NetCDF_C_PATHS}/lib)
 SET (NEED_LIBS shoc cld_fraction p3 scream_rrtmgp rrtmgp ${NETCDF_C} scream_control scream_share physics_share yakl)
 
 # Test atmosphere processes.
-CreateUnitTest(shoc_cld_p3_rrtmgp shoc_cld_p3_rrtmgp.cpp "${NEED_LIBS}" LABELS "shoc;cld;p3;rrtmgp;physics")
+CreateUnitTest(shoc_cld_p3_rrtmgp shoc_cld_p3_rrtmgp.cpp "${NEED_LIBS}" LABELS "shoc;cld;p3;rrtmgp;physics"
   MPI_RANKS 1 ${SCREAM_TEST_MAX_RANKS}
 )
 target_include_directories(shoc_cld_p3_rrtmgp PUBLIC
