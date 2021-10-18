@@ -307,7 +307,7 @@ def ensure_pip():
     """
     # Use ensurepip for installing pip
     import ensurepip
-    ensurepip.bootstrap(user=True)
+    ensurepip.bootstrap(user=True, upgrade=True)
 
     # needed to "rehash" available libs
     site.main() # pylint: disable=no-member
@@ -369,7 +369,6 @@ def _ensure_pylib_impl(libname, min_version=None, pip_libname=None):
         pip_install_lib(pip_libname)
         pkg = import_module(libname)
 
-    
     expect (package_version_ok(pkg,min_version), "Error! Could not find version {} for package {}.".format(min_version,libname))
 
 # We've accepted these outside dependencies
