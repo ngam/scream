@@ -6,8 +6,6 @@
 #include "physics/rrtmgp/atmosphere_radiation.hpp"
 #include "YAKL.h"
 
-#include "physics/share/physics_only_grids_manager.hpp"
-
 #include "share/atm_process/atmosphere_process.hpp"
 
 #include "ekat/ekat_pack.hpp"

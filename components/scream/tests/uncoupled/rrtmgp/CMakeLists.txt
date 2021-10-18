@@ -12,7 +12,7 @@ if (NOT ${SCREAM_BASELINES_ONLY})
 
     ## Create the unit test for rrtmgp that compares against a rrtmgp-allsky data file.
     CreateUnitTest(
-        rrtmgp_standalone_unit "${SRC}" "${NEED_LIBS}" LABELS "rrtmgp;physics"
+        rrtmgp_standalone_unit rrtmgp_standalone_unit.cpp "${NEED_LIBS}" LABELS "rrtmgp;physics"
         EXE_ARGS "--ekat-test-params rrtmgp_inputfile=${CMAKE_CURRENT_BINARY_DIR}/data/rrtmgp-allsky.nc,rrtmgp_baseline=${SCREAM_TEST_DATA_DIR}/rrtmgp-allsky-baseline.nc"
     )
     target_include_directories(rrtmgp_standalone_unit PUBLIC
