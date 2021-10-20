@@ -110,6 +110,7 @@ contains
     namelist /ctl_nl/test_case, &
       u_perturb,                &
       partmethod,               &         ! mesh partitioning method
+      cubed_sphere_map,         &
       vert_remap_q_alg,         &
       theta_advect_form,        &
       theta_hydrostatic_mode,   &   
