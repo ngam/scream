@@ -16,6 +16,8 @@ import json
 from collections import OrderedDict
 from pathlib import Path
 
+FAKE_BASELINE_SUBDIR = "fake"
+
 ###############################################################################
 class TestAllScream(object):
 ###############################################################################
@@ -193,8 +195,8 @@ class TestAllScream(object):
                 # We treat the "AUTO" string as a request for automatic baseline dir.
                 auto_dir = get_mach_baseline_root_dir(self._machine)
                 self._baseline_dir = Path(auto_dir) if auto_dir else default_baselines_root_dir
-                if "SCREAM_FAKE_AUTO" in os.environ:
-                    self._baseline_dir = self._baseline_dir/"fake"
+                if "SCREAM_FAKE_ONLY" in os.environ:
+                    self._baseline_dir = self._baseline_dir/FAKE_BASELINE_SUBDIR
             else:
                 self._baseline_dir = Path(self._baseline_dir).absolute()
 

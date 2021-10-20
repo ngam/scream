@@ -21,10 +21,13 @@ from utils import run_cmd, check_minimum_python_version, expect, ensure_pylint, 
 
 check_minimum_python_version(3, 4)
 
-from machines_specs import is_machine_supported, is_cuda_machine, get_all_supported_machines
+from machines_specs import is_machine_supported, is_cuda_machine, get_all_supported_machines, \
+    get_mach_baseline_root_dir
 
 from git_utils import get_current_branch, get_current_commit, get_current_head, git_refs_difference, \
     is_repo_clean, get_common_ancestor, checkout_git_ref, get_git_toplevel_dir
+
+from test_all_scream import FAKE_BASELINE_SUBDIR
 
 import unittest, argparse, sys, difflib, shutil, os
 from pathlib import Path
@@ -520,8 +523,7 @@ class TestTestAllScream(TestBaseOuter.TestBase):
         """
         if self._jenkins:
             # We set PULLREQUESTNUM to block dashboard submission
-            # We set SCREAM_FAKE_AUTO to not interere with real baselines
-            cmd = self.get_cmd("PR_LABELS= NODE_NAME={} SCREAM_FAKE_AUTO=TRUE PULLREQUESTNUM=42 ./jenkins/jenkins_common.sh".format(self._machine),
+            cmd = self.get_cmd("PR_LABELS= NODE_NAME={} PULLREQUESTNUM=42 ./jenkins/jenkins_common.sh".format(self._machine),
                                self._machine, dry_run=False)
             run_cmd_assert_result(self, cmd, from_dir=TEST_DIR)
 
@@ -534,8 +536,7 @@ class TestTestAllScream(TestBaseOuter.TestBase):
         """
         if self._jenkins:
             # We set PULLREQUESTNUM to block dashboard submission
-            # We set SCREAM_FAKE_AUTO to not interere with real baselines
-            cmd = self.get_cmd("PR_LABELS= NODE_NAME={} SCREAM_FAKE_AUTO=TRUE PULLREQUESTNUM= ./jenkins/jenkins_common.sh".format(self._machine),
+            cmd = self.get_cmd("PR_LABELS= NODE_NAME={} PULLREQUESTNUM= ./jenkins/jenkins_common.sh".format(self._machine),
                                self._machine, dry_run=False)
             run_cmd_assert_result(self, cmd, from_dir=TEST_DIR)
 
@@ -548,7 +549,7 @@ class TestTestAllScream(TestBaseOuter.TestBase):
         """
         if self._jenkins:
             # Any fail will do, we already checked test-all-scream captures all the fail types
-            cmd = self.get_cmd("PR_LABELS= SCREAM_FORCE_CONFIG_FAIL=True NODE_NAME={} SCREAM_FAKE_AUTO=TRUE PULLREQUESTNUM=42 ./jenkins/jenkins_common.sh".format(self._machine),
+            cmd = self.get_cmd("PR_LABELS= SCREAM_FORCE_CONFIG_FAIL=True NODE_NAME={} PULLREQUESTNUM=42 ./jenkins/jenkins_common.sh".format(self._machine),
                                self._machine, dry_run=False)
             run_cmd_assert_result(self, cmd, from_dir=TEST_DIR, expect_works=False)
 
@@ -561,7 +562,7 @@ class TestTestAllScream(TestBaseOuter.TestBase):
         """
         if self._jenkins:
             # Any fail will do, we already checked test-all-scream captures all the fail types
-            cmd = self.get_cmd("PR_LABELS= SCREAM_FORCE_CONFIG_FAIL=True NODE_NAME={} SCREAM_FAKE_AUTO=TRUE PULLREQUESTNUM= ./jenkins/jenkins_common.sh".format(self._machine),
+            cmd = self.get_cmd("PR_LABELS= SCREAM_FORCE_CONFIG_FAIL=True NODE_NAME={} PULLREQUESTNUM= ./jenkins/jenkins_common.sh".format(self._machine),
                                self._machine, dry_run=False)
             run_cmd_assert_result(self, cmd, from_dir=TEST_DIR, expect_works=False)
 
@@ -668,6 +669,9 @@ OR
 ###############################################################################
 def scripts_tests(machine=None, generate=False, compare=False, full=False, jenkins=False):
 ###############################################################################
+    # This is an important env var that tells our entire devops infrastructure
+    # that we are doing infrastructure testing. This has wide a range of impacts
+    # across the system.
     os.environ["SCREAM_FAKE_ONLY"] = "True"
 
     # Store test params in environment
@@ -684,7 +688,20 @@ def scripts_tests(machine=None, generate=False, compare=False, full=False, jenki
         expect(machine, "Must provide a machine to do a full run")
         CONFIG["full"] = full
 
+    # Grab timestamps of files in maintained baselines
+    if machine:
+        mod_stamp_map = {}
+        auto_dir = Path(get_mach_baseline_root_dir(machine))
+        for file_ in auto_dir.iterdir():
+            mod_stamp_map[file_.name] = file_.stat().st_mtime
+
     unittest.main(verbosity=2)
+
+    # Check that files have not been modified
+    if machine:
+        for file_ in auto_dir.iterdir():
+            if file_.name != FAKE_BASELINE_SUBDIR:
+                expect(mod_stamp_map[file_.name] == file_.stat().st_mtime, "File {} was modified by testing".format(file_.name))
 
 ###############################################################################
 def _main_func(desc):
