@@ -91,7 +91,6 @@ HOMME:
     tstep_type        : 10
 
   vert_nl:
-    vform     : ccm
     vfile_mid : ./data/scream-72m.ascii
     vfile_int : ./data/scream-72i.ascii
 
