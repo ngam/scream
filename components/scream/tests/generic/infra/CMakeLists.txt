@@ -14,3 +14,8 @@ if (SCREAM_TEST_MAX_TOTAL_THREADS GREATER_EQUAL 16)
     THREADS 4
     MPI_RANKS 1 4 1)
 endif()
+
+if (SCREAM_TEST_MAX_RANKS GREATER_EQUAL 4) # AND CUDA_BUILD)
+  CreateUnitTest(resource_spread_gpu "resource_spread_gpu.cpp" "${NEED_LIBS}"
+    MPI_RANKS 4)
+endif()
