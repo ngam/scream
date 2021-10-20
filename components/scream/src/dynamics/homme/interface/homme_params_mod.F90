@@ -332,7 +332,7 @@ contains
 
        write(iulog,*)"homme namelist: qsize_d = ",qsize_d
 
-       write(iulog,*)"homme namelist: ne,np         = ",NE,np
+       write(iulog,*)"homme namelist: ne,np         = ",ne,np
        write(iulog,*)"homme namelist: partmethod    = ",PARTMETHOD
        write(iulog,*)"homme namelist: cubed_sphere_map = ",cubed_sphere_map
        write(iulog,*)"homme namelist: COORD_TRANSFORM_METHOD    = ",COORD_TRANSFORM_METHOD
