@@ -18,12 +18,9 @@ TEST_CASE("gpu_spread", "[fake_infra_test]")
   std::this_thread::sleep_for(std::chrono::seconds(seconds_to_sleep));
 
   using KT = ekat::KokkosTypes<ekat::DefaultDevice>;
-
-  // Simple kernel for printing device id
-  Kokkos::parallel_for(1, KOKKOS_LAMBDA(const int& i) {
-    const auto device_id = Kokkos::Tools::Experimental::device_id(typename KT::ExeSpace());
-    printf("JGF device_id: %d\n", device_id);
-  });
+  auto device_obj = typename KT::ExeSpace();
+  const auto device_id = Kokkos::Tools::Experimental::device_id(device_obj);
+  printf("JGF device_id: %d\n", device_id);
 
 }
 
