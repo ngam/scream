@@ -33,6 +33,9 @@
 #include "ekat/ekat_assert.hpp"
 #include "ekat/kokkos//ekat_subview_utils.hpp"
 
+#include <iomanip>
+
+
 namespace scream
 {
 
@@ -319,6 +322,85 @@ void HommeDynamics::initialize_impl ()
 
 void HommeDynamics::run_impl (const int dt)
 {
+  {
+    Kokkos::fence();
+    const auto horiz_winds      = get_field_out("horiz_winds").get_view<Real***>();
+    const auto T_mid            = get_field_out("T_mid").get_view<Real**>();
+    const auto w_int            = get_field_out("w_int").get_view<Real**>();
+    const auto phi_int          = get_field_out("phi_int").get_view<Real**>();
+    const auto pseudo_density   = get_field_out("pseudo_density").get_view<Real**>();
+    const auto ps               = get_field_out("ps").get_view<Real*>();
+    const auto qv               = get_field_in("qv").get_view<const Real**>();
+    //const auto p_int            = get_field_out("p_int").get_view<Real**>();
+    //const auto p_mid            = get_field_out("p_mid").get_view<Real**>();
+    const auto T_mid_prev       = get_field_out("T_mid_prev").get_view<Real**>();
+    const auto horiz_winds_prev = get_field_out("horiz_winds_prev").get_view<Real***>();
+    const auto w_int_prev       = get_field_out("w_int_prev").get_view<Real**>();
+
+    Real horiz_winds_sum(0),T_mid_sum(0),w_int_sum(0),phi_int_sum(0),pseudo_density_sum(0),ps_sum(0),
+         qv_sum(0),
+         //p_int_sum(0),p_mid_sum(0),
+         T_mid_prev_sum(0),horiz_winds_prev_sum(0),w_int_prev_sum(0);
+
+    const int ncols = m_ref_grid->get_num_local_dofs();
+    const int nlevs = m_ref_grid->get_num_vertical_levels();
+    for (int i=0; i<ncols; ++i) {
+      ps_sum += ps(i);
+      for (int k=0; k<nlevs; ++k) {
+        T_mid_sum += T_mid(i,k);
+        pseudo_density_sum += pseudo_density(i,k);
+        qv_sum += qv(i,k);
+        //p_mid_sum += p_mid(i,k);
+        T_mid_prev_sum += T_mid_prev(i,k);
+        for (int c=0; c<2; ++c) {
+          horiz_winds_sum += horiz_winds(i,c,k);
+          horiz_winds_prev_sum += horiz_winds_prev(i,c,k);
+        }
+      }
+
+      for (int k=0; k<nlevs+1; ++k) {
+        w_int_sum += w_int(i,k);
+        phi_int_sum += phi_int(i,k);
+        //p_int_sum += p_int(i,k);
+        w_int_prev_sum += w_int_prev(i,k);
+      }
+    }
+
+    Real global_horiz_winds,global_T_mid,global_w_int,global_phi_int,global_pseudo_density,global_ps,
+         global_qv,
+         //global_p_int,global_p_mid,
+         global_T_mid_prev,global_horiz_winds_prev,global_w_int_prev;
+
+    get_comm().all_reduce(&horiz_winds_sum,&global_horiz_winds,1,MPI_SUM);
+    get_comm().all_reduce(&T_mid_sum,&global_T_mid,1,MPI_SUM);
+    get_comm().all_reduce(&w_int_sum,&global_w_int,1,MPI_SUM);
+    get_comm().all_reduce(&phi_int_sum,&global_phi_int,1,MPI_SUM);
+    get_comm().all_reduce(&pseudo_density_sum,&global_pseudo_density,1,MPI_SUM);
+    get_comm().all_reduce(&ps_sum,&global_ps,1,MPI_SUM);
+    get_comm().all_reduce(&qv_sum,&global_qv,1,MPI_SUM);
+    //get_comm().all_reduce(&p_int_sum,&global_p_int,1,MPI_SUM);
+    //get_comm().all_reduce(&p_mid_sum,&global_p_mid,1,MPI_SUM);
+    get_comm().all_reduce(&T_mid_prev_sum,&global_T_mid_prev,1,MPI_SUM);
+    get_comm().all_reduce(&horiz_winds_prev_sum,&global_horiz_winds_prev,1,MPI_SUM);
+    get_comm().all_reduce(&w_int_prev_sum,&global_w_int_prev,1,MPI_SUM);
+
+    if (get_comm().am_i_root()) {
+      std::cout << "INPUT-HOMME: " << std::endl << std::setprecision(14)
+                << "global_horiz_winds: " << global_horiz_winds << std::endl
+                << "global_T_mid: " << global_T_mid << std::endl
+                << "global_w_int: " << global_w_int << std::endl
+                << "global_phi_int: " << global_phi_int << std::endl
+                << "global_pseudo_density: " << global_pseudo_density << std::endl
+                << "global_ps: " << global_ps << std::endl
+                << "global_qv: " << global_qv << std::endl
+                //<< "global_p_int: " << global_p_int << std::endl
+                //<< "global_p_mid: " << global_p_mid << std::endl
+                << "global_T_mid_prev: " << global_T_mid_prev << std::endl
+                << "global_horiz_winds_prev: " << global_horiz_winds_prev << std::endl
+                << "global_w_int_prev: " << global_w_int_prev << std::endl;
+    }
+  }
+
   try {
     // Prepare inputs for homme
     Kokkos::fence();
@@ -335,10 +417,90 @@ void HommeDynamics::run_impl (const int dt)
     // Post process Homme's output, to produce what the rest of Atm expects
     Kokkos::fence();
     homme_post_process ();
+
   } catch (std::exception& e) {
     EKAT_ERROR_MSG(e.what());
   } catch (...) {
     EKAT_ERROR_MSG("Something went wrong, but we don't know what.\n");
+  }
+
+  {
+    Kokkos::fence();
+    const auto horiz_winds      = get_field_out("horiz_winds").get_view<Real***>();
+    const auto T_mid            = get_field_out("T_mid").get_view<Real**>();
+    const auto w_int            = get_field_out("w_int").get_view<Real**>();
+    const auto phi_int          = get_field_out("phi_int").get_view<Real**>();
+    const auto pseudo_density   = get_field_out("pseudo_density").get_view<Real**>();
+    const auto ps               = get_field_out("ps").get_view<Real*>();
+    //const auto qv               = get_field_in("qv").get_view<const Real**>();
+    const auto p_int            = get_field_out("p_int").get_view<Real**>();
+    const auto p_mid            = get_field_out("p_mid").get_view<Real**>();
+    const auto T_mid_prev       = get_field_out("T_mid_prev").get_view<Real**>();
+    const auto horiz_winds_prev = get_field_out("horiz_winds_prev").get_view<Real***>();
+    const auto w_int_prev       = get_field_out("w_int_prev").get_view<Real**>();
+
+    Real horiz_winds_sum(0),T_mid_sum(0),w_int_sum(0),phi_int_sum(0),pseudo_density_sum(0),ps_sum(0),
+         //qv_sum(0),
+         p_int_sum(0),p_mid_sum(0),
+         T_mid_prev_sum(0),horiz_winds_prev_sum(0),w_int_prev_sum(0);
+
+    const int ncols = m_ref_grid->get_num_local_dofs();
+    const int nlevs = m_ref_grid->get_num_vertical_levels();
+    for (int i=0; i<ncols; ++i) {
+      ps_sum += ps(i);
+      for (int k=0; k<nlevs; ++k) {
+        T_mid_sum += T_mid(i,k);
+        pseudo_density_sum += pseudo_density(i,k);
+        //qv_sum += qv(i,k);
+        p_mid_sum += p_mid(i,k);
+        T_mid_prev_sum += T_mid_prev(i,k);
+        for (int c=0; c<2; ++c) {
+          horiz_winds_sum += horiz_winds(i,c,k);
+          horiz_winds_prev_sum += horiz_winds_prev(i,c,k);
+        }
+      }
+
+      for (int k=0; k<nlevs+1; ++k) {
+        w_int_sum += w_int(i,k);
+        phi_int_sum += phi_int(i,k);
+        p_int_sum += p_int(i,k);
+        w_int_prev_sum += w_int_prev(i,k);
+      }
+    }
+
+    Real global_horiz_winds,global_T_mid,global_w_int,global_phi_int,global_pseudo_density,global_ps,
+         //global_qv,
+         global_p_int,global_p_mid,
+         global_T_mid_prev,global_horiz_winds_prev,global_w_int_prev;
+
+    get_comm().all_reduce(&horiz_winds_sum,&global_horiz_winds,1,MPI_SUM);
+    get_comm().all_reduce(&T_mid_sum,&global_T_mid,1,MPI_SUM);
+    get_comm().all_reduce(&w_int_sum,&global_w_int,1,MPI_SUM);
+    get_comm().all_reduce(&phi_int_sum,&global_phi_int,1,MPI_SUM);
+    get_comm().all_reduce(&pseudo_density_sum,&global_pseudo_density,1,MPI_SUM);
+    get_comm().all_reduce(&ps_sum,&global_ps,1,MPI_SUM);
+    //get_comm().all_reduce(&qv_sum,&global_qv,1,MPI_SUM);
+    get_comm().all_reduce(&p_int_sum,&global_p_int,1,MPI_SUM);
+    get_comm().all_reduce(&p_mid_sum,&global_p_mid,1,MPI_SUM);
+    get_comm().all_reduce(&T_mid_prev_sum,&global_T_mid_prev,1,MPI_SUM);
+    get_comm().all_reduce(&horiz_winds_prev_sum,&global_horiz_winds_prev,1,MPI_SUM);
+    get_comm().all_reduce(&w_int_prev_sum,&global_w_int_prev,1,MPI_SUM);
+
+    if (get_comm().am_i_root()) {
+      std::cout << "OUTPUT-HOMME: " << std::endl << std::setprecision(14)
+                << "global_horiz_winds: " << global_horiz_winds << std::endl
+                << "global_T_mid: " << global_T_mid << std::endl
+                << "global_w_int: " << global_w_int << std::endl
+                << "global_phi_int: " << global_phi_int << std::endl
+                << "global_pseudo_density: " << global_pseudo_density << std::endl
+                << "global_ps: " << global_ps << std::endl
+                //<< "global_qv: " << global_qv << std::endl
+                << "global_p_int: " << global_p_int << std::endl
+                << "global_p_mid: " << global_p_mid << std::endl
+                << "global_T_mid_prev: " << global_T_mid_prev << std::endl
+                << "global_horiz_winds_prev: " << global_horiz_winds_prev << std::endl
+                << "global_w_int_prev: " << global_w_int_prev << std::endl;
+    }
   }
 }
 
