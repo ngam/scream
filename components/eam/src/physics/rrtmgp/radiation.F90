@@ -634,15 +634,13 @@ contains
       end do
       call add_hist_coord("ngas",size(active_gases),"Number of active gases in radiation", 'N/A', active_gases_index)
       call addfld("T_mid_inRAD",            (/ 'lev' /),         'I', 'K',        "T_mid")
-      call addfld("cos_zenith_inRAD",       horiz_only,          'I', 'unitless', "mu0")
       call addfld("eff_radius_qc_inRAD",    (/ 'lev' /),         'I', 'micron',   "rel")
       call addfld("eff_radius_qi_inRAD",    (/ 'lev' /),         'I', 'micron',   "rei")
       call addfld("p_mid_inRAD",            (/ 'lev' /),         'I', 'Pa',       "p_mid")
       call addfld("p_int_inRAD",            (/ 'ilev' /),        'I', 'Pa',       "p_int")
-      call addfld("pseudo_density_inRAD",   (/ 'lev' /),         'I', 'Pa',       "pseudo density")
+      call addfld("qv_inRAD",               (/ 'lev' /),         'I', 'kg/kg',    "qv, water vapor MMR")
       call addfld("qc_inRAD",               (/ 'lev' /),         'I', 'kg/kg',    "qc, cld water MMR")
       call addfld("qi_inRAD",               (/ 'lev' /),         'I', 'kg/kg',    "qi, ice water MMR")
-      call addfld("t_int_inRAD",            (/ 'ilev' /),        'I', 'K',        "Interface Temperature")
       call addfld("sfc_alb_dir_vis_inRAD",  horiz_only,          'I', '1',        "Direct shortwave surface albedo")
       call addfld("sfc_alb_dif_vis_inRAD",  horiz_only,          'I', '1',        "Diffuse shortwave surface albedo")
       call addfld("sfc_alb_dir_nir_inRAD",  horiz_only,          'I', '1',        "Direct longwave surface albedo")
@@ -1374,7 +1372,6 @@ contains
          ), fatal=.false., warn=rrtmgp_enable_temperature_warnings)
          call t_stopf('rrtmgp_check_temperatures')
       end if
-      call outfld("t_int_inRAD",            tint,         pcols, state%lchnk)
 
       ! Do shortwave stuff...
       if (radiation_do('sw')) then
