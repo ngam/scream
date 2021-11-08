@@ -405,8 +405,6 @@ end function shoc_implements_cnst
     call addfld( "sgs_buoy_flux_inSHOC",    (/'lev'/),          'I', 'K m/s',    "wthv_sec")
     call addfld( "surf_latent_flux_inSHOC", horiz_only,         'I', 'kg/s^3',   "shf"     )
     call addfld( "surf_sens_flux_inSHOC",   horiz_only,         'I', 'kg/s^3',   "cflx_k0" )
-!ASD    call addfld( "surf_u_mom_flux_inSHOC",  horiz_only,         'I', 'kg m/s^2', "wsx"     )
-!ASD    call addfld( "surf_v_mom_flux_inSHOC",  horiz_only,         'I', 'kg m/s^2', "wsy"     )
     call addfld( "surf_mom_flux_inSHOC",    (/'dim2'/),         'I', 'kg m/s^2', "wsy"     )
     call addfld( "tke_inSHOC",              (/'lev'/),          'I', '(m/s)^2',  "tke"     )
     call addfld( "z_int_inSHOC",            (/'ilev'/),         'I', 'm',        "zi"      )
@@ -887,8 +885,6 @@ end function shoc_implements_cnst
    call outfld( "sgs_buoy_flux_inSHOC",    wthv,                   pcols, lchnk )
    call outfld( "surf_latent_flux_inSHOC", cam_in%cflx,            pcols, lchnk )
    call outfld( "surf_sens_flux_inSHOC",   cam_in%shf,             pcols, lchnk )
-!ASD   call outfld( "surf_u_mom_flux_inSHOC",  cam_in%wsx,             pcols, lchnk )
-!ASD   call outfld( "surf_v_mom_flux_inSHOC",  cam_in%wsy,             pcols, lchnk )
    do i=1,ncol
      ws(i,1) = cam_in%wsx(i)
      ws(i,2) = cam_in%wsy(i)
