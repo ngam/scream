@@ -645,6 +645,7 @@ contains
       call addfld("sfc_alb_dif_vis_inRAD",  horiz_only,          'I', '1',        "Diffuse shortwave surface albedo")
       call addfld("sfc_alb_dir_nir_inRAD",  horiz_only,          'I', '1',        "Direct longwave surface albedo")
       call addfld("sfc_alb_dif_nir_inRAD",  horiz_only,          'I', '1',        "Diffuse longwave surface albedo")
+      call addfld("surf_lw_flux_up_inRAD",  horiz_only,          'I', '1',        "Surface LW flux up")
 
       ! Shortwave radiation
       call addfld('TOT_CLD_VISTAU', (/ 'lev' /), 'A',   '1', &
@@ -1391,6 +1392,7 @@ contains
          call outfld("sfc_alb_dif_vis_inRAD",  cam_in%asdif , ncol, state%lchnk)
          call outfld("sfc_alb_dir_nir_inRAD",  cam_in%aldir , ncol, state%lchnk)
          call outfld("sfc_alb_dif_nir_inRAD",  cam_in%aldif , ncol, state%lchnk)
+         call outfld("surf_lw_flux_up_inRAD",  cam_in%lwup , ncol, state%lchnk)
 
          ! Get cosine solar zenith angle for current time step.
          call set_cosine_solar_zenith_angle(state, dt_avg, coszrs(1:ncol))
