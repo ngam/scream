@@ -258,9 +258,7 @@ PhysicsDynamicsRemapper (const grid_ptr_type& phys_grid,
   EKAT_REQUIRE_MSG(dyn_grid->type()==GridType::SE,     "Error! Input dynamics grid is not a SE grid.\n");
   EKAT_REQUIRE_MSG(phys_grid->type()==GridType::Point, "Error! Input physics grid is not a Point grid.\n");
 
-  auto se_dyn_grid = std::dynamic_pointer_cast<const SEGrid>(dyn_grid);
-  m_dyn_grid = se_dyn_grid->get_cg_grid();
-  EKAT_REQUIRE_MSG (m_dyn_grid, "Error! Dynamics grid does not store a CG SEGrid.\n");
+  m_dyn_grid = dyn_grid;
   m_phys_grid = phys_grid;
 
   m_num_phys_cols = phys_grid->get_num_local_dofs();
@@ -1204,7 +1202,9 @@ create_p2d_map () {
   auto num_phys_dofs = m_phys_grid->get_num_local_dofs();
   auto num_dyn_dofs  = m_dyn_grid->get_num_local_dofs();
 
-  auto dyn_gids  = m_dyn_grid->get_dofs_gids();
+  auto se_dyn = std::dynamic_pointer_cast<const SEGrid>(m_dyn_grid);
+  EKAT_REQUIRE_MSG(se_dyn, "Error! Something went wrong casting dyn grid to a SEGrid.\n");
+  auto dyn_gids  = se_dyn->get_cg_dofs_gids();
   auto phys_gids = m_phys_grid->get_dofs_gids();
 
   auto policy = KokkosTypes<DefaultDevice>::RangePolicy(0,num_phys_dofs);
