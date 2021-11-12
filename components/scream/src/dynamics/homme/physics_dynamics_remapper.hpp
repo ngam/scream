@@ -1,12 +1,14 @@
 #ifndef SCREAM_PHYSICS_DYNAMICS_REMAPPER_HPP
 #define SCREAM_PHYSICS_DYNAMICS_REMAPPER_HPP
 
+#include <memory>
 #include "share/scream_config.hpp"
 
 #include "dynamics/homme/homme_dimensions.hpp"
 #include "dynamics/homme/homme_dynamics_helpers.hpp"
 
 #include "share/grid/remap/abstract_remapper.hpp"
+#include "share/grid/se_grid.hpp"
 #include "share/util/scream_utils.hpp"
 
 #include "ekat/ekat_pack.hpp"
@@ -88,11 +90,11 @@ protected:
 
   std::vector<bool>         m_is_state_field;
 
-  grid_ptr_type     m_dyn_grid;
-  grid_ptr_type     m_phys_grid;
+  grid_ptr_type             m_dyn_grid;
+  grid_ptr_type             m_phys_grid;
 
   int m_num_phys_cols;
-  typename grid_type::lid_to_idx_map_type    m_lid2elgp;
+  typename grid_type::lid_to_idx_map_type   m_lid2elgp;
 
   std::shared_ptr<Homme::BoundaryExchange>  m_be[HOMMEXX_NUM_TIME_LEVELS];
 
@@ -256,7 +258,9 @@ PhysicsDynamicsRemapper (const grid_ptr_type& phys_grid,
   EKAT_REQUIRE_MSG(dyn_grid->type()==GridType::SE,     "Error! Input dynamics grid is not a SE grid.\n");
   EKAT_REQUIRE_MSG(phys_grid->type()==GridType::Point, "Error! Input physics grid is not a Point grid.\n");
 
-  m_dyn_grid  = dyn_grid;
+  auto se_dyn_grid = std::dynamic_pointer_cast<const SEGrid>(dyn_grid);
+  m_dyn_grid = se_dyn_grid->get_cg_grid();
+  EKAT_REQUIRE_MSG (m_dyn_grid, "Error! Dynamics grid does not store a CG SEGrid.\n");
   m_phys_grid = phys_grid;
 
   m_num_phys_cols = phys_grid->get_num_local_dofs();
@@ -1149,7 +1153,12 @@ local_remap_bwd_3d (const MT& team) const
     case 3:
     {
       auto phys = reshape<ScalarT,3> (phys_ptrs(i), phys_dims(i));
-
+      auto name = m_phys[i].get_header().get_identifier().name();
+      bool print = false;
+      if (icol==90 && name=="tracers_dyn") {
+        print = true;
+        std::cout << "local remap of " << m_phys[i].get_header().get_identifier().name() << ", is state = " << is_state_field_dev(i) << "\n";
+      }
       if (is_state_field_dev(i)) {
         auto dyn = reshape<ScalarT,6> (dyn_ptrs(i), dyn_dims(i));
 
@@ -1163,6 +1172,12 @@ local_remap_bwd_3d (const MT& team) const
       } else {
         auto dyn = reshape<ScalarT,5> (dyn_ptrs(i), dyn_dims(i));
 
+        if (print) {
+          std::cout << "going in:\n"
+            << "dyn (" << elgp[0] << ",0," << elgp[1] << "," << elgp[2] << ",51): " << dyn(elgp[0],0,elgp[1],elgp[2],51) << "\n"
+            << "dyn (23,0,3,3,51): " << dyn(23,0,3,3,51) << "\n"
+            << "phys(" << icol << ",0,51): " << phys(icol,0,51) << "\n";
+        }
         const auto tr = Kokkos::TeamThreadRange(team, dim_p[1]*dim_p[2]);
         const auto f = [&] (const int idx) {
           const int idim = idx%dim_p[1];
@@ -1170,6 +1185,11 @@ local_remap_bwd_3d (const MT& team) const
           phys(icol,idim,ilev) = dyn(elgp[0],idim,elgp[1],elgp[2],ilev);
         };
         Kokkos::parallel_for(tr, f);
+        if (print) {
+          std::cout << "going out:\n"
+            << "dyn (" << elgp[0] << ",0," << elgp[1] << "," << elgp[2] << ",51): " << dyn(elgp[0],0,elgp[1],elgp[2],51) << "\n"
+            << "phys(" << icol << ",0,51): " << phys(icol,0,51) << "\n";
+        }
       }
       break;
     }
