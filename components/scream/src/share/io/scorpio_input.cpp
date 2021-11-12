@@ -78,6 +78,7 @@ set_parameters (const ekat::ParameterList& params) {
   // This ensures that the nc file is open, even if init() doesn't
   // get called. This allows users to read global scalar values from
   // an nc file, by easily creating an AtmosphereInput on the fly.
+  printf("ASD - register_file(%s)\n",m_filename.c_str());
   scorpio::register_file(m_filename,scorpio::Read);
 }
 
@@ -222,6 +223,7 @@ void AtmosphereInput::read_variables (const int time_index)
   for (auto const& name : m_fields_names) {
 
     // Read the data
+    printf("ASD grid_read_data_array(%s,%s,%d,%p)\n",m_filename.c_str(),name.c_str(),time_index,m_host_views_1d.at(name).data());
     scorpio::grid_read_data_array(m_filename,name,time_index,m_host_views_1d.at(name).data());
 
     // If we have a field manager, make sure the data is correctly
@@ -325,6 +327,7 @@ set_views (const std::map<std::string,view_1d_host>& host_views_1d,
 /* ---------------------------------------------------------- */
 void AtmosphereInput::finalize() 
 {
+  printf("ASD eam_pio_closefile(%s)\n",m_filename.c_str());
   scorpio::eam_pio_closefile(m_filename);
 } // finalize
 
@@ -336,6 +339,7 @@ void AtmosphereInput::init_scorpio_structures()
   set_degrees_of_freedom();
 
   // Finish the definition phase for this file.
+  printf("ASD set_decomp(%s)\n",m_filename.c_str());
   scorpio::set_decomp  (m_filename); 
 
   m_is_inited = true;
@@ -359,6 +363,9 @@ void AtmosphereInput::register_variables()
     //  Currently the field_manager only stores Real variables so it is not an issue,
     //  but in the future if non-Real variables are added we will want to accomodate that.
     //TODO: Should be able to simply inquire from the netCDF the dimensions for each variable.
+    printf("ASD get_variable(%s, %s, %s, %d, [",m_filename.c_str(),name.c_str(),name.c_str(),vec_of_dims.size());
+    for (int ii=0;ii<vec_of_dims.size();ii++) {printf("%s, ",vec_of_dims[ii].c_str());}
+    printf("], %d, %s)\n",PIO_REAL,io_decomp_tag.c_str());
     scorpio::get_variable(m_filename, name, name, vec_of_dims.size(),
                           vec_of_dims, PIO_REAL, io_decomp_tag);
   }
@@ -404,6 +411,9 @@ void AtmosphereInput::set_degrees_of_freedom()
   // Here, offset is meant in the *global* array in the nc file.
   for (auto const& name : m_fields_names) {
     auto var_dof = get_var_dof_offsets(m_layouts.at(name));
+    printf("ASD set_dof(%s, %s, %d, [",m_filename.c_str(),name.c_str(),var_dof.size());
+    for (int ii=0;ii<var_dof.size();ii++) {printf("%d, ",var_dof[ii]);}
+    printf("])\n");
     scorpio::set_dof(m_filename,name,var_dof.size(),var_dof.data());
   }
 } // set_degrees_of_freedom

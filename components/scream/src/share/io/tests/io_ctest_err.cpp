@@ -25,7 +25,6 @@ TEST_CASE("input_output_nomgr","io")
 
   ekat::Comm io_comm(MPI_COMM_WORLD);  // MPI communicator group used for I/O set as ekat object.
   Int num_gcols = 2*io_comm.size();
-  Int num_levs = 3;
   MPI_Fint fcomm = MPI_Comm_c2f(io_comm.mpi_comm());  // MPI communicator group used for I/O.  In our simple test we use MPI_COMM_WORLD, however a subset could be used.
   scorpio::eam_init_pio_subsystem(fcomm);   // Gather the initial PIO subsystem data creater by component coupler
 
@@ -39,19 +38,24 @@ TEST_CASE("input_output_nomgr","io")
   }
 
   std::string filename = "io_output_test_np1.INSTANT.Steps_x10.2000-01-01.000010.nc";
+  std::string fieldname = "field_1";
 
   // Read data for check
-  view_1d<Real> field_1("field_1",num_gcols);
-  scorpio::register_file(filename,scorpio::Read);
-  std::vector<std::string> vec_of_dims{"ncol"};
-  std::string r_decomp = "Real-ncol";
-  scorpio::get_variable(filename, "field_1", "field_1", vec_of_dims.size(), vec_of_dims, PIO_REAL, r_decomp);
-  std::vector<int> var_dof(num_gcols);
-  std::iota(var_dof.begin(),var_dof.end(),0);
-  scorpio::set_dof(filename,"field_1",var_dof.size(),var_dof.data());
-  scorpio::set_decomp(filename);
-  scorpio::grid_read_data_array(filename,"field_1",0,field_1.data());
-  scorpio::eam_pio_closefile(filename);
+  // Try absolutely manually:
+  std::vector<std::string> vec_of_dims = {"ncol"};
+  std::vector<int> var_dof = {0,1};
+  view_1d<Real> field_1(fieldname,num_gcols);
+  auto field_1_h = Kokkos::create_mirror_view(field_1);
+  scorpio::register_file       (filename,scorpio::Read);
+  scorpio::get_variable        (filename,fieldname,fieldname, 1, vec_of_dims, 6, "Real-ncol");
+  scorpio::set_dof             (filename,fieldname, 2, var_dof.data());
+  scorpio::set_decomp          (filename);
+  scorpio::grid_read_data_array(filename,fieldname, -1, field_1_h.data());
+  scorpio::eam_pio_closefile   (filename);
+  Kokkos::deep_copy(field_1,field_1_h);
+
+  REQUIRE(field_1_h(0) == 10);
+  REQUIRE(field_1_h(1) == 11);
   
 } // TEST_CASE
 } // namespace
