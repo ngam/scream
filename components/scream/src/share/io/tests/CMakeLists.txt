@@ -6,6 +6,10 @@ CreateUnitTest(io_test "io.cpp" scream_io LABELS "io"
   MPI_RANKS 1 ${SCREAM_TEST_MAX_RANKS}
 )
 
+CreateUnitTest(io_ctest_err "io_ctest_err.cpp" scream_io LABELS "io"
+  MPI_RANKS 1 ${SCREAM_TEST_MAX_RANKS}
+)
+
 ## Test restart
 # Each restart test is a "setup" for the restart_check test,
 # and cannot run in parallel with other restart tests
