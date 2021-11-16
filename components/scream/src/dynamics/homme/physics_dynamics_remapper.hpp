@@ -519,7 +519,7 @@ initialize_device_variables()
     // Store time levels
     h_is_state_field_dev(i) = m_is_state_field[i];
     h_time_levels(0).first  = tl.n0;
-    h_time_levels(0).second = tl.np1;
+    h_time_levels(0).second = tl.n0;
   }
 
   Kokkos::deep_copy(phys_ptrs,   h_phys_ptrs);
