@@ -1081,6 +1081,7 @@ local_remap_bwd_2d (const MT& team) const
       auto phys = reshape<RealType,1> (phys_ptrs(i), phys_dims(i));
 
       if (is_state_field_dev(i)) {
+        // std::cout << "Remapping time level " << time_levels(0).np1 << " of " << m_dyn[i].get_header().get_identifier().name() << ".\n";
         auto dyn = reshape<RealType,4> (dyn_ptrs(i), dyn_dims(i));
 
         phys(icol) = dyn(elgp[0],time_levels(0).np1,elgp[1],elgp[2]);
@@ -1098,6 +1099,7 @@ local_remap_bwd_2d (const MT& team) const
       const auto tr = Kokkos::TeamThreadRange(team, dim_p[1]);
       if (is_state_field_dev(i)) {
         auto dyn = reshape<RealType,5> (dyn_ptrs(i), dyn_dims(i));
+        // std::cout << "Remapping time level " << time_levels(0).np1 << " of " << m_dyn[i].get_header().get_identifier().name() << ".\n";
 
         const auto f = [&] (const int idim) {
           phys(icol,idim) = dyn(elgp[0],time_levels(0).np1,idim,elgp[1],elgp[2]);
@@ -1140,6 +1142,7 @@ local_remap_bwd_3d (const MT& team) const
       const auto tr = Kokkos::TeamThreadRange(team, dim_p[1]);
       if (is_state_field_dev(i)) {
         auto dyn = reshape<ScalarT,5> (dyn_ptrs(i), dyn_dims(i));
+        // std::cout << "Remapping time level " << time_levels(0).np1 << " of " << m_dyn[i].get_header().get_identifier().name() << ".\n";
 
         const auto f = [&] (const int ilev) {
           phys(icol,ilev) = dyn(elgp[0],time_levels(0).np1,elgp[1],elgp[2],ilev);
@@ -1159,13 +1162,14 @@ local_remap_bwd_3d (const MT& team) const
     {
       auto phys = reshape<ScalarT,3> (phys_ptrs(i), phys_dims(i));
       auto name = m_phys[i].get_header().get_identifier().name();
-      bool print = false;
-      if (icol==90 && name=="tracers_dyn") {
-        print = true;
-        std::cout << "local remap of " << m_phys[i].get_header().get_identifier().name() << ", is state = " << is_state_field_dev(i) << "\n";
-      }
+      // bool print = false;
+      // if (icol==90 && name=="tracers_dyn") {
+      //   print = true;
+      //   std::cout << "local remap of " << m_phys[i].get_header().get_identifier().name() << ", is state = " << is_state_field_dev(i) << "\n";
+      // }
       if (is_state_field_dev(i)) {
         auto dyn = reshape<ScalarT,6> (dyn_ptrs(i), dyn_dims(i));
+        // std::cout << "Remapping time level " << time_levels(0).np1 << " of " << m_dyn[i].get_header().get_identifier().name() << ".\n";
 
         const auto tr = Kokkos::TeamThreadRange(team, dim_p[1]*dim_p[2]);
         const auto f = [&] (const int idx) {
@@ -1177,12 +1181,12 @@ local_remap_bwd_3d (const MT& team) const
       } else {
         auto dyn = reshape<ScalarT,5> (dyn_ptrs(i), dyn_dims(i));
 
-        if (print) {
-          std::cout << "going in:\n"
-            << "dyn (" << elgp[0] << ",0," << elgp[1] << "," << elgp[2] << ",51): " << dyn(elgp[0],0,elgp[1],elgp[2],51) << "\n"
-            << "dyn (23,0,3,3,51): " << dyn(23,0,3,3,51) << "\n"
-            << "phys(" << icol << ",0,51): " << phys(icol,0,51) << "\n";
-        }
+        // if (print) {
+        //   std::cout << "going in:\n"
+        //     << "dyn (" << elgp[0] << ",0," << elgp[1] << "," << elgp[2] << ",51): " << dyn(elgp[0],0,elgp[1],elgp[2],51) << "\n"
+        //     << "dyn (23,0,3,3,51): " << dyn(23,0,3,3,51) << "\n"
+        //     << "phys(" << icol << ",0,51): " << phys(icol,0,51) << "\n";
+        // }
         const auto tr = Kokkos::TeamThreadRange(team, dim_p[1]*dim_p[2]);
         const auto f = [&] (const int idx) {
           const int idim = idx%dim_p[1];
@@ -1190,11 +1194,11 @@ local_remap_bwd_3d (const MT& team) const
           phys(icol,idim,ilev) = dyn(elgp[0],idim,elgp[1],elgp[2],ilev);
         };
         Kokkos::parallel_for(tr, f);
-        if (print) {
-          std::cout << "going out:\n"
-            << "dyn (" << elgp[0] << ",0," << elgp[1] << "," << elgp[2] << ",51): " << dyn(elgp[0],0,elgp[1],elgp[2],51) << "\n"
-            << "phys(" << icol << ",0,51): " << phys(icol,0,51) << "\n";
-        }
+        // if (print) {
+        //   std::cout << "going out:\n"
+        //     << "dyn (" << elgp[0] << ",0," << elgp[1] << "," << elgp[2] << ",51): " << dyn(elgp[0],0,elgp[1],elgp[2],51) << "\n"
+        //     << "phys(" << icol << ",0,51): " << phys(icol,0,51) << "\n";
+        // }
       }
       break;
     }
