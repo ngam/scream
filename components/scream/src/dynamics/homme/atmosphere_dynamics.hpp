@@ -47,9 +47,6 @@ public:
   // Note: field_mgrs[grid_name] is the FM on grid $grid_name
   void register_fields (const std::map<std::string,std::shared_ptr<FieldManager<Real>>>& field_mgrs) const;
 
-  // Retrieves an internal field, given field name and grid name.
-  const Field<Real>& get_internal_field (const std::string& name, const std::string& grid) const;
-
 #ifndef KOKKOS_ENABLE_CUDA
   // Cuda requires methods enclosing __device__ lambda's to be public
 protected:
