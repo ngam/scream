@@ -492,18 +492,6 @@ contains
         ! Different dimlen, but different decomp tag even if attaching "-time" in input file
         call errorHandle("PIO Error: variable "//trim(shortname)//", already registered with different decomp tag, in file: "//trim(filename),-999)
       endif
-      ! if (hist_var%has_t_dim) then
-      !   ! If the registered var also has time dimension, match all n-1 dims
-
-      ! else
-      ! endif
-      !       (hist_var%numdims .ne. numdims .or. &
-      !        trim(hist_var%pio_decomp_tag) .ne. trim(pio_decomp_tag))) .or. &
-      !      (pio_atm_file%purpose .eq. file_purpose_in .and. & ! In files *may* use a decomp tag
-      !       (hist_var%numdims .ne. (numdims+1) .or. &           ! without "-time" at the end
-      !        trim(hist_var%pio_decomp_tag) .ne. trim(pio_decomp_tag)//"-time")) )then
-      !   call errorHandle("PIO Error: variable "//trim(shortname)//", already registered with different name and/or dims and/or dtype and/or decomp tag, in file: "//trim(filename),-999)
-      ! endif
     endif
   end subroutine get_variable
 !=====================================================================!
